@@ -22,8 +22,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            CustomUserDetailsService userDetailsService,
+            JwtAuthenticationFilter jwtAuthenticationFilter) {
 
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -47,26 +48,117 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             throws Exception {
 
         http
-                .csrf().disable()
+            .csrf().disable()
 
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement()
+            .sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS)
 
-                .and()
+            .and()
 
-                .authorizeRequests()
+            .authorizeRequests()
 
-                .antMatchers("/api/auth/**")
-                .permitAll()
+            // ==========================================
+            // Authentication
+            // ==========================================
 
-                .anyRequest()
-                .authenticated()
+            .antMatchers("/api/auth/login")
+            .permitAll()
 
-                .and()
+            .antMatchers("/api/auth/register")
+            .permitAll()
 
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+            .antMatchers("/api/auth/change-password")
+            .authenticated()
+
+            // ==========================================
+            // OWNER / MANAGER Dashboard
+            // ==========================================
+
+            .antMatchers("/api/dashboard")
+            .hasAnyRole("OWNER", "MANAGER")
+
+
+            // ==========================================
+            // TENANT Dashboard
+            // ==========================================
+
+            .antMatchers("/api/dashboard/tenant")
+            .hasRole("TENANT")
+
+
+            // ==========================================
+            // Property APIs
+            // OWNER only
+            // ==========================================
+
+            .antMatchers("/api/properties/**")
+            .hasRole("OWNER")
+
+
+            // ==========================================
+            // Tenant - Own Profile
+            // ==========================================
+
+            .antMatchers("/api/tenants/me/**")
+            .hasRole("TENANT")
+
+
+            // ==========================================
+            // Tenant Management
+            // OWNER / MANAGER
+            // ==========================================
+
+            .antMatchers("/api/tenants/**")
+            .hasAnyRole("OWNER", "MANAGER")
+
+
+            // ==========================================
+            // Tenant - Own Lease
+            // ==========================================
+
+            .antMatchers("/api/leases/my/**")
+            .hasRole("TENANT")
+
+
+            // ==========================================
+            // Lease Management
+            // OWNER / MANAGER
+            // ==========================================
+
+            .antMatchers("/api/leases/**")
+            .hasAnyRole("OWNER", "MANAGER")
+
+
+            // ==========================================
+            // Tenant - Own Payments
+            // ==========================================
+
+            .antMatchers("/api/payments/my/**")
+            .hasRole("TENANT")
+
+
+            // ==========================================
+            // Payment Management
+            // OWNER / MANAGER
+            // ==========================================
+
+            .antMatchers("/api/payments/**")
+            .hasAnyRole("OWNER", "MANAGER")
+
+
+            // ==========================================
+            // Everything else
+            // ==========================================
+
+            .anyRequest()
+            .authenticated()
+
+            .and()
+
+            .addFilterBefore(
+                    jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean

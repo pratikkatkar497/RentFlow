@@ -9,88 +9,86 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "users")
-
 public class User extends BaseEntity {
 
-	@Column(nullable = false, length = 50)
-	private String firstName;
+    @Column(nullable = false, length = 50)
+    private String firstName;
 
-	@Column(nullable = false, length = 50)
-	private String lastName;
+    @Column(nullable = false, length = 50)
+    private String lastName;
 
-	@Column(nullable = false, unique = true, length = 100)
-	private String email;
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
 
-	@Column(nullable = false)
-	private String password;
+    @Column(nullable = false)
+    private String password;
 
-	@Column(nullable = false, unique = true, length = 15)
-	private String phone;
+    @Column(nullable = false, unique = true, length = 15)
+    private String phone;
 
-	@Column(nullable = false)
-	private Boolean enabled = true;
+    @Column(nullable = false)
+    private Boolean enabled = true;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "role_id", nullable = false)
-	private Role role;
-	
-	
-	
-	public String getFirstName() {
-		return firstName;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+    public User() {
+    }
 
-	public String getLastName() {
-		return lastName;
-	}
+    public String getFirstName() {
+        return firstName;
+    }
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public String getLastName() {
+        return lastName;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public String getPhone() {
-		return phone;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public Boolean getEnabled() {
-		return enabled;
-	}
+    public String getPhone() {
+        return phone;
+    }
 
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-	public Role getRole() {
-		return role;
-	}
+    public Boolean getEnabled() {
+        return enabled;
+    }
 
-	public void setRole(Role role) {
-		this.role = role;
-	}
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
+    public Role getRole() {
+        return role;
+    }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
 }

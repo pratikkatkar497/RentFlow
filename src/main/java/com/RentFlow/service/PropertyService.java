@@ -1,21 +1,55 @@
 package com.RentFlow.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import com.RentFlow.dto.request.PropertyFilterRequestDTO;
 import com.RentFlow.dto.request.PropertyRequestDTO;
 import com.RentFlow.dto.response.PropertyResponseDTO;
 
 public interface PropertyService {
 
-    PropertyResponseDTO createProperty(PropertyRequestDTO request);
+    // =========================================================
+    // Create Property
+    // =========================================================
 
-    PropertyResponseDTO getPropertyById(Long id);
+    PropertyResponseDTO createProperty(
+            PropertyRequestDTO request);
 
-    List<PropertyResponseDTO> getMyProperties();
+    // =========================================================
+    // Get Property By ID
+    // =========================================================
 
-    PropertyResponseDTO updateProperty(Long id,
-                                       PropertyRequestDTO request);
+    PropertyResponseDTO getPropertyById(
+            Long id);
 
-    void deleteProperty(Long id);
+    // =========================================================
+    // Get My Properties - Pagination
+    // =========================================================
 
+    Page<PropertyResponseDTO> getMyProperties(
+            Pageable pageable);
+
+    // =========================================================
+    // Search + Filter + Pagination
+    // =========================================================
+
+    Page<PropertyResponseDTO> filterProperties(
+            PropertyFilterRequestDTO request,
+            Pageable pageable);
+
+    // =========================================================
+    // Update Property
+    // =========================================================
+
+    PropertyResponseDTO updateProperty(
+            Long id,
+            PropertyRequestDTO request);
+
+    // =========================================================
+    // Delete Property
+    // =========================================================
+
+    void deleteProperty(
+            Long id);
 }

@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     	    throw new PhoneAlreadyExistsException("Phone number already exists");
     	}
 
-        Role role = roleRepository.findByName(RoleType.OWNER)
+        Role role = roleRepository.findByName(RoleType.TENANT)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Role not found"));
 

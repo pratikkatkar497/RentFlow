@@ -5,41 +5,58 @@ import java.time.LocalDate;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 public class CreateTenantRequestDTO {
 
-    @NotBlank(message = "First name is required")
-    private String firstName;
+	@NotBlank(message = "First name is required")
+	@Size(max = 50, message = "First name cannot exceed 50 characters")
+	private String firstName;
 
-    @NotBlank(message = "Last name is required")
-    private String lastName;
+	@NotBlank(message = "Last name is required")
+	@Size(max = 50, message = "Last name cannot exceed 50 characters")
+	private String lastName;
 
-    @Email(message = "Invalid email")
-    private String email;
+	@NotBlank(message = "Email is required")
+	@Email(message = "Invalid email")
+	@Size(max = 100, message = "Email cannot exceed 100 characters")
+	private String email;
 
-    @NotBlank(message = "Phone number is required")
-    private String phone;
+	@NotBlank(message = "Phone number is required")
+	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must contain exactly 10 digits")
+	private String phone;
 
-    private String gender;
+	@NotBlank(message = "Password is required")
+	@Size(min = 6, max = 100, message = "Password must contain 6 to 100 characters")
+	private String password;
 
-    private String occupation;
+	@Size(max = 20, message = "Gender cannot exceed 20 characters")
+	private String gender;
 
-    private String companyName;
+	@Size(max = 100, message = "Occupation cannot exceed 100 characters")
+	private String occupation;
 
-    private String aadhaarNumber;
+	@Size(max = 150, message = "Company name cannot exceed 150 characters")
+	private String companyName;
 
-    private String permanentAddress;
+	@Pattern(regexp = "^[0-9]{12}$", message = "Aadhaar number must contain exactly 12 digits")
+	private String aadhaarNumber;
 
-    private String emergencyContact;
+	@Size(max = 500, message = "Permanent address cannot exceed 500 characters")
+	private String permanentAddress;
 
-    @NotNull(message = "Move in date is required")
-    private LocalDate moveInDate;
+	@Pattern(regexp = "^[0-9]{10}$", message = "Emergency contact must contain exactly 10 digits")
+	private String emergencyContact;
 
-    @NotNull(message = "Property Id is required")
-    private Long propertyId;
+	@NotNull(message = "Move in date is required")
+	private LocalDate moveInDate;
 
-    public CreateTenantRequestDTO() {
-    }
+	@NotNull(message = "Property Id is required")
+	private Long propertyId;
+
+	public CreateTenantRequestDTO() {
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -71,6 +88,14 @@ public class CreateTenantRequestDTO {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getGender() {
@@ -136,5 +161,4 @@ public class CreateTenantRequestDTO {
 	public void setPropertyId(Long propertyId) {
 		this.propertyId = propertyId;
 	}
-    
 }

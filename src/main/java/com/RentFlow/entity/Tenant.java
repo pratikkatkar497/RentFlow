@@ -9,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.RentFlow.enums.TenantStatus;
@@ -59,6 +60,15 @@ public class Tenant extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
+
+    /*
+     * Login account associated with this tenant.
+     *
+     * One Tenant = One User account
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
     public Tenant() {
     }
@@ -173,5 +183,13 @@ public class Tenant extends BaseEntity {
 
     public void setProperty(Property property) {
         this.property = property;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

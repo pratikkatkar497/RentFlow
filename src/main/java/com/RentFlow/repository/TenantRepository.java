@@ -1,16 +1,20 @@
 package com.RentFlow.repository;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.RentFlow.entity.Property;
 import com.RentFlow.entity.Tenant;
 import com.RentFlow.entity.User;
 import com.RentFlow.enums.TenantStatus;
 
-public interface TenantRepository extends JpaRepository<Tenant, Long> {
+public interface TenantRepository
+extends JpaRepository<Tenant, Long>,
+        JpaSpecificationExecutor<Tenant> {
 
     Optional<Tenant> findByEmail(String email);
 
@@ -24,12 +28,24 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             Property property,
             TenantStatus status);
 
-    List<Tenant> findByProperty(Property property);
+    // Existing
+    java.util.List<Tenant> findByProperty(Property property);
 
-    List<Tenant> findByPropertyOwner(User owner);
+    // PAGINATION
+    Page<Tenant> findByPropertyOwner(
+            User owner,
+            Pageable pageable);
 
     Optional<Tenant> findByIdAndPropertyOwner(
             Long id,
             User owner);
 
+    // Tenant login profile
+    Optional<Tenant> findByUser(User user);
+    
+
+    Page<Tenant> findByPropertyOwnerAndStatus(
+            User owner,
+            TenantStatus status,
+            Pageable pageable);
 }
