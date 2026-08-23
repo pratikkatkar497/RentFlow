@@ -1,9 +1,11 @@
+
 package com.RentFlow.exception;
 
 import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,100 +16,151 @@ import com.RentFlow.response.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
-	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(
-	        AccessDeniedException ex) {
 
-	    ApiResponse<Object> response = new ApiResponse<>();
+    // =========================================================
+    // 403 - Access Denied
+    // =========================================================
 
-	    response.setSuccess(false);
-	    response.setMessage(ex.getMessage());
-	    response.setData(null);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(
+            AccessDeniedException ex) {
 
-	    return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-	}
+        ApiResponse<Object> response = new ApiResponse<>();
+
+        response.setSuccess(false);
+        response.setMessage(
+                ex.getMessage() != null
+                        ? ex.getMessage()
+                        : "Access denied");
+        response.setData(null);
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+    // =========================================================
+    // 409 - Email Already Exists
+    // =========================================================
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(
             EmailAlreadyExistsException ex) {
 
-        ErrorResponse error = new ErrorResponse(
-                false,
+        return buildErrorResponse(
                 ex.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+                HttpStatus.CONFLICT);
     }
+
+    // =========================================================
+    // 409 - Phone Already Exists
+    // =========================================================
 
     @ExceptionHandler(PhoneAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handlePhoneAlreadyExists(
             PhoneAlreadyExistsException ex) {
 
-        ErrorResponse error = new ErrorResponse(
-                false,
+        return buildErrorResponse(
                 ex.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+                HttpStatus.CONFLICT);
     }
+
+    // =========================================================
+    // 404 - Resource Not Found
+    // =========================================================
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex) {
 
-        ErrorResponse error = new ErrorResponse(
-                false,
+        return buildErrorResponse(
                 ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+                HttpStatus.NOT_FOUND);
     }
+
+    // =========================================================
+    // 400 - Bad Request
+    // =========================================================
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            BadRequestException ex) {
+
+        return buildErrorResponse(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    // =========================================================
+    // 401 - Invalid Credentials
+    // =========================================================
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(
             BadCredentialsException ex) {
 
-        ErrorResponse error = new ErrorResponse(
-                false,
+        return buildErrorResponse(
                 "Invalid email or password",
-                HttpStatus.UNAUTHORIZED.value(),
-                LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+                HttpStatus.UNAUTHORIZED);
     }
+
+    // =========================================================
+    // 400 - Validation Error
+    // =========================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
 
-        String message = ex.getBindingResult()
-                .getFieldError()
-                .getDefaultMessage();
+        String message = "Invalid request";
 
-        ErrorResponse error = new ErrorResponse(
-                false,
+        if (ex.getBindingResult().getFieldError() != null) {
+
+            message = ex.getBindingResult()
+                    .getFieldError()
+                    .getDefaultMessage();
+        }
+
+        return buildErrorResponse(
                 message,
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+                HttpStatus.BAD_REQUEST);
     }
+
+    // =========================================================
+    // 500 - Unexpected Error
+    // =========================================================
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex) {
 
-        ErrorResponse error = new ErrorResponse(
-                false,
-                ex.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                LocalDateTime.now());
+        /*
+         * Do NOT expose ex.getMessage() to the client.
+         * Internal exception details should remain on the server.
+         */
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(
+                "An unexpected error occurred.",
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // =========================================================
+    // Common Error Response Builder
+    // =========================================================
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(
+            String message,
+            HttpStatus status) {
+
+        ErrorResponse error = new ErrorResponse(
+                false,
+                message,
+                status.value(),
+                LocalDateTime.now());
+
+        return ResponseEntity
+                .status(status)
+                .body(error);
+    }
 }
+

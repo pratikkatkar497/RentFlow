@@ -1,0 +1,13 @@
+package com.RentFlow.enums;
+
+public enum NotificationType {
+
+    PAYMENT_DUE,
+    PAYMENT_OVERDUE,
+    PAYMENT_RECEIVED,
+
+    MAINTENANCE_CREATED,
+    MAINTENANCE_STARTED,
+    MAINTENANCE_RESOLVED,
+    MAINTENANCE_CLOSED
+}

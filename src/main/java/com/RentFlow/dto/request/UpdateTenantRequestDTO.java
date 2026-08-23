@@ -5,123 +5,168 @@ import java.time.LocalDate;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 public class UpdateTenantRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "First name is required")
+    @Size(
+        max = 50,
+        message = "First name cannot exceed 50 characters"
+    )
     private String firstName;
 
-    @NotBlank
+    @NotBlank(message = "Last name is required")
+    @Size(
+        max = 50,
+        message = "Last name cannot exceed 50 characters"
+    )
     private String lastName;
 
-    @Email
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
+    @Size(
+        max = 100,
+        message = "Email cannot exceed 100 characters"
+    )
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Phone number is required")
+    @Pattern(
+        regexp = "^[0-9]{10}$",
+        message = "Phone number must contain exactly 10 digits"
+    )
     private String phone;
 
+    @Size(
+        max = 20,
+        message = "Gender cannot exceed 20 characters"
+    )
     private String gender;
 
+    @Size(
+        max = 100,
+        message = "Occupation cannot exceed 100 characters"
+    )
     private String occupation;
 
+    @Size(
+        max = 150,
+        message = "Company name cannot exceed 150 characters"
+    )
     private String companyName;
 
+    @Pattern(
+        regexp = "^[0-9]{12}$",
+        message = "Aadhaar number must contain exactly 12 digits"
+    )
     private String aadhaarNumber;
 
+    @Size(
+        max = 500,
+        message = "Permanent address cannot exceed 500 characters"
+    )
     private String permanentAddress;
 
+    @Pattern(
+        regexp = "^[0-9]{10}$",
+        message = "Emergency contact must contain exactly 10 digits"
+    )
     private String emergencyContact;
 
-    @NotNull
+    @NotNull(message = "Move in date is required")
     private LocalDate moveInDate;
 
-	public String getFirstName() {
-		return firstName;
-	}
+    public UpdateTenantRequestDTO() {
+    }
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+    public String getFirstName() {
+        return firstName;
+    }
 
-	public String getLastName() {
-		return lastName;
-	}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+    public String getLastName() {
+        return lastName;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getPhone() {
-		return phone;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    public String getPhone() {
+        return phone;
+    }
 
-	public String getGender() {
-		return gender;
-	}
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
+    public String getGender() {
+        return gender;
+    }
 
-	public String getOccupation() {
-		return occupation;
-	}
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
-	public void setOccupation(String occupation) {
-		this.occupation = occupation;
-	}
+    public String getOccupation() {
+        return occupation;
+    }
 
-	public String getCompanyName() {
-		return companyName;
-	}
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
+    }
 
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
+    public String getCompanyName() {
+        return companyName;
+    }
 
-	public String getAadhaarNumber() {
-		return aadhaarNumber;
-	}
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
 
-	public void setAadhaarNumber(String aadhaarNumber) {
-		this.aadhaarNumber = aadhaarNumber;
-	}
+    public String getAadhaarNumber() {
+        return aadhaarNumber;
+    }
 
-	public String getPermanentAddress() {
-		return permanentAddress;
-	}
+    public void setAadhaarNumber(String aadhaarNumber) {
+        this.aadhaarNumber = aadhaarNumber;
+    }
 
-	public void setPermanentAddress(String permanentAddress) {
-		this.permanentAddress = permanentAddress;
-	}
+    public String getPermanentAddress() {
+        return permanentAddress;
+    }
 
-	public String getEmergencyContact() {
-		return emergencyContact;
-	}
+    public void setPermanentAddress(String permanentAddress) {
+        this.permanentAddress = permanentAddress;
+    }
 
-	public void setEmergencyContact(String emergencyContact) {
-		this.emergencyContact = emergencyContact;
-	}
+    public String getEmergencyContact() {
+        return emergencyContact;
+    }
 
-	public LocalDate getMoveInDate() {
-		return moveInDate;
-	}
+    public void setEmergencyContact(String emergencyContact) {
+        this.emergencyContact = emergencyContact;
+    }
 
-	public void setMoveInDate(LocalDate moveInDate) {
-		this.moveInDate = moveInDate;
-	}
+    public LocalDate getMoveInDate() {
+        return moveInDate;
+    }
 
-   
+    public void setMoveInDate(LocalDate moveInDate) {
+        this.moveInDate = moveInDate;
+    }
 }
+
