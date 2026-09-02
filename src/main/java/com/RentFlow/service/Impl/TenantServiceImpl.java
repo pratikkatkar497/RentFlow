@@ -86,6 +86,7 @@ public class TenantServiceImpl implements TenantService {
     // Create Tenant
     // =========================================================
 
+    @Transactional
     @Override
     public TenantResponseDTO createTenant(
             CreateTenantRequestDTO request) {
@@ -424,6 +425,7 @@ public class TenantServiceImpl implements TenantService {
     // =========================================================
 
     @Override
+    @Transactional
     public TenantResponseDTO updateTenant(
             Long tenantId,
             UpdateTenantRequestDTO request) {
@@ -568,6 +570,7 @@ public class TenantServiceImpl implements TenantService {
     // Deactivate Tenant
     // =========================================================
 
+    @Transactional
     @Override
     public void deactivateTenant(
             Long tenantId) {
@@ -656,6 +659,7 @@ public class TenantServiceImpl implements TenantService {
     // Update My Profile
     // =========================================================
 
+    @Transactional
     @Override
     public TenantResponseDTO updateMyProfile(
             UpdateMyTenantRequestDTO request) {

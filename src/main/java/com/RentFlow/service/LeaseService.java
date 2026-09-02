@@ -1,6 +1,7 @@
 package com.RentFlow.service;
 
 import com.RentFlow.dto.request.CreateLeaseRequestDTO;
+import com.RentFlow.dto.request.LeaseFilterRequestDTO;
 import com.RentFlow.dto.request.UpdateLeaseRequestDTO;
 import com.RentFlow.dto.response.LeaseResponseDTO;
 import com.RentFlow.dto.response.PageResponseDTO;
@@ -21,6 +22,13 @@ public interface LeaseService {
 
     // Get lease by ID
     LeaseResponseDTO getLeaseById(Long leaseId);
+    
+    PageResponseDTO<LeaseResponseDTO> filterLeases(
+            LeaseFilterRequestDTO request,
+            int page,
+            int size,
+            String sortBy,
+            String direction);
 
     // Get all leases for logged-in owner's properties
     PageResponseDTO<LeaseResponseDTO> getMyLeases(

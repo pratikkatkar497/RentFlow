@@ -213,6 +213,7 @@ public class PaymentServiceImpl implements PaymentService {
     // OWNER
     // =========================================================
 
+    @Transactional
     @Override
     public PaymentResponseDTO createPayment(
             CreatePaymentRequestDTO request) {
@@ -360,6 +361,7 @@ public class PaymentServiceImpl implements PaymentService {
     // OWNER
     // =========================================================
 
+    @Transactional
     @Override
     public PaymentResponseDTO updatePayment(
             Long paymentId,
@@ -626,7 +628,7 @@ public class PaymentServiceImpl implements PaymentService {
     // Runs every midnight
     // =========================================================
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
     @Override
     public void updateOverduePayments() {
 
@@ -683,6 +685,7 @@ public class PaymentServiceImpl implements PaymentService {
     // OWNER
     // =========================================================
 
+    @Transactional
     @Override
     public PaymentResponseDTO generatePayment(
             GeneratePaymentRequestDTO request) {
@@ -779,7 +782,8 @@ public class PaymentServiceImpl implements PaymentService {
     // Runs every day at 1 AM
     // =========================================================
 
-    @Scheduled(cron = "0 0 1 * * *")
+
+    @Transactional
     @Override
     public void generateMonthlyPayments() {
 

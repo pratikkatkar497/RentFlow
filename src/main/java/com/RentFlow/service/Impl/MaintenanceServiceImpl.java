@@ -448,6 +448,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
     // OWNER
     // =========================================================
 
+    @Transactional
     @Override
     public MaintenanceResponseDTO updateMaintenance(
             Long id,

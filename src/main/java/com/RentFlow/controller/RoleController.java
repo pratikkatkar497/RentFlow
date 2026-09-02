@@ -11,10 +11,8 @@ import com.RentFlow.entity.Role;
 import com.RentFlow.response.ApiResponse;
 import com.RentFlow.service.RoleService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 public class RoleController {
 
 	@Autowired

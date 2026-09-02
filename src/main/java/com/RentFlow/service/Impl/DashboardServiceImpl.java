@@ -315,13 +315,9 @@ public class DashboardServiceImpl implements DashboardService {
 
         List<Payment> payments =
                 paymentRepository
-                        .findByLeaseTenantOrderByDueDateAsc(
-                                tenant);
+                        .findByLeaseOrderByDueDateAsc(lease);
 
         Payment nextPayment = null;
-
-        LocalDate today =
-                LocalDate.now();
 
         for (Payment payment : payments) {
 
@@ -329,27 +325,12 @@ public class DashboardServiceImpl implements DashboardService {
                 continue;
             }
 
-            /*
-             * Ignore payments that are already paid.
-             *
-             * We are interested in the next
-             * pending/overdue payment.
-             */
-
-            if (payment.getStatus()
-                    == PaymentStatus.PAID) {
+            if (payment.getStatus() == PaymentStatus.PAID) {
                 continue;
             }
 
-            if (payment.getDueDate()
-                    .isBefore(today)
-                    ||
-                !payment.getDueDate()
-                    .isBefore(today)) {
-
-                nextPayment = payment;
-                break;
-            }
+            nextPayment = payment;
+            break;
         }
 
         // -----------------------------------------------------

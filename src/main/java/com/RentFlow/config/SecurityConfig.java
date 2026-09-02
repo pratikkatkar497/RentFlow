@@ -1,4 +1,4 @@
-package com.RentFlow.config;
+ package com.RentFlow.config;
 
 import com.RentFlow.security.jwt.JwtAuthenticationFilter;
 import com.RentFlow.service.Impl.CustomUserDetailsService;

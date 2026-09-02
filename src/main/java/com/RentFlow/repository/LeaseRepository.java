@@ -3,16 +3,20 @@ package com.RentFlow.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 import com.RentFlow.entity.Lease;
 import com.RentFlow.entity.Property;
 import com.RentFlow.entity.Tenant;
 import com.RentFlow.entity.User;
 import com.RentFlow.enums.LeaseStatus;
 
-public interface LeaseRepository extends JpaRepository<Lease, Long> {
+public interface LeaseRepository
+extends JpaRepository<Lease, Long>,
+        JpaSpecificationExecutor<Lease> {
 
     // Find all leases for a property
     List<Lease> findByProperty(Property property);

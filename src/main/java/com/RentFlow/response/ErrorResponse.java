@@ -1,6 +1,7 @@
 package com.RentFlow.response;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public class ErrorResponse {
 
@@ -8,8 +9,8 @@ public class ErrorResponse {
     private String message;
     private int status;
     private LocalDateTime timestamp;
-
-    public ErrorResponse() {
+    private Map<String, String> errors;
+    public ErrorResponse(boolean b, String string, int i, LocalDateTime localDateTime, Map<String, String> errors2) {
     }
 
     public ErrorResponse(boolean success, String message, int status, LocalDateTime timestamp) {
@@ -19,6 +20,13 @@ public class ErrorResponse {
         this.timestamp = timestamp;
     }
 
+    public Map<String, String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Map<String, String> errors) {
+        this.errors = errors;
+    }
     public boolean isSuccess() {
         return success;
     }

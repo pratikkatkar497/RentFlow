@@ -82,6 +82,8 @@ public interface PaymentRepository
             Pageable pageable);
 
 	Page<Payment> findByLeasePropertyOwnerAndStatus(User currentUser, PaymentStatus status, Pageable pageable);
+
+	List<Payment> findByLeaseOrderByDueDateAsc(Lease lease);
     
     
 }

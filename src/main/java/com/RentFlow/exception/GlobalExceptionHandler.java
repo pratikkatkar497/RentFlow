@@ -2,6 +2,8 @@
 package com.RentFlow.exception;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.RentFlow.response.ApiResponse;
 import com.RentFlow.response.ErrorResponse;
 
 @RestControllerAdvice
@@ -21,23 +22,14 @@ public class GlobalExceptionHandler {
     // 403 - Access Denied
     // =========================================================
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(
-            AccessDeniedException ex) {
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+	        AccessDeniedException ex) {
 
-        ApiResponse<Object> response = new ApiResponse<>();
-
-        response.setSuccess(false);
-        response.setMessage(
-                ex.getMessage() != null
-                        ? ex.getMessage()
-                        : "Access denied");
-        response.setData(null);
-
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(response);
-    }
+	    return buildErrorResponse(
+	            "Access denied",
+	            HttpStatus.FORBIDDEN);
+	}
 
     // =========================================================
     // 409 - Email Already Exists
@@ -112,18 +104,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
 
-        String message = "Invalid request";
+        Map<String, String> errors = new LinkedHashMap<>();
 
-        if (ex.getBindingResult().getFieldError() != null) {
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errors.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
+                );
 
-            message = ex.getBindingResult()
-                    .getFieldError()
-                    .getDefaultMessage();
-        }
+        ErrorResponse response = new ErrorResponse(
+                false,
+                "Validation failed",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                errors
+        );
 
-        return buildErrorResponse(
-                message,
-                HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     // =========================================================

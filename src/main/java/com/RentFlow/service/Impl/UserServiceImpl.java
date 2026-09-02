@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.RentFlow.dto.request.LoginRequestDTO;
 import com.RentFlow.dto.request.RegisterRequestDTO;
@@ -53,6 +54,7 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional
     @Override
     public UserResponseDTO register(RegisterRequestDTO request) {
 

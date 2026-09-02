@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.RentFlow.dto.request.CreateLeaseRequestDTO;
+import com.RentFlow.dto.request.LeaseFilterRequestDTO;
 import com.RentFlow.dto.request.UpdateLeaseRequestDTO;
 import com.RentFlow.dto.response.LeaseResponseDTO;
 import com.RentFlow.dto.response.PageResponseDTO;
@@ -32,6 +33,7 @@ import com.RentFlow.repository.PropertyRepository;
 import com.RentFlow.repository.TenantRepository;
 import com.RentFlow.repository.UserRepository;
 import com.RentFlow.service.LeaseService;
+import com.RentFlow.specification.LeaseSpecification;
 
 @Service
 public class LeaseServiceImpl implements LeaseService {
@@ -114,6 +116,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional
     public LeaseResponseDTO createLease(
             CreateLeaseRequestDTO request) {
 
@@ -296,6 +299,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional(readOnly = true)
     public LeaseResponseDTO getLeaseById(
             Long leaseId) {
 
@@ -325,6 +329,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<LeaseResponseDTO> getMyLeases(
             int page,
             int size,
@@ -348,6 +353,10 @@ public class LeaseServiceImpl implements LeaseService {
         if (size <= 0) {
             throw new BadRequestException(
                     "Page size must be greater than zero");
+        }
+        if (size > 100) {
+            throw new BadRequestException(
+                    "Page size cannot be greater than 100");
         }
 
         Sort sort;
@@ -380,6 +389,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional
     public LeaseResponseDTO updateLease(
             Long leaseId,
             UpdateLeaseRequestDTO request) {
@@ -442,6 +452,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional
     public LeaseResponseDTO activateLease(
             Long leaseId) {
 
@@ -508,6 +519,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional
     public LeaseResponseDTO terminateLease(
             Long leaseId) {
 
@@ -608,6 +620,7 @@ public class LeaseServiceImpl implements LeaseService {
     // =========================================================
 
     @Override
+    @Transactional(readOnly = true)
     public LeaseResponseDTO getMyLease() {
 
         User currentUser = getCurrentUser();
@@ -630,5 +643,175 @@ public class LeaseServiceImpl implements LeaseService {
 
         return convertToResponse(lease);
     }
+    
+ // =========================================================
+ // SEARCH + FILTER + PAGINATION + SORTING
+ // =========================================================
+
+ @Override
+ @Transactional(readOnly = true)
+ public PageResponseDTO<LeaseResponseDTO> filterLeases(
+         LeaseFilterRequestDTO request,
+         int page,
+         int size,
+         String sortBy,
+         String direction) {
+
+     User owner = getCurrentUser();
+
+     // =========================================================
+     // Validate Pagination
+     // =========================================================
+
+     if (page < 0) {
+
+         throw new BadRequestException(
+                 "Page number cannot be negative");
+     }
+
+     if (size <= 0) {
+
+         throw new BadRequestException(
+                 "Page size must be greater than zero");
+     }
+
+     if (size > 100) {
+
+         throw new BadRequestException(
+                 "Page size cannot be greater than 100");
+     }
+
+     // =========================================================
+     // Default Sorting
+     // =========================================================
+
+     if (sortBy == null ||
+    	        sortBy.trim().isEmpty()) {
+
+    	    sortBy = "id";
+    	}
+
+    	validateLeaseSortField(sortBy);
+
+     if (direction == null ||
+             direction.trim().isEmpty()) {
+
+         direction = "desc";
+     }
+
+     Sort sort;
+
+     if ("desc".equalsIgnoreCase(direction)) {
+
+         sort = Sort.by(sortBy)
+                 .descending();
+
+     } else if ("asc".equalsIgnoreCase(direction)) {
+
+         sort = Sort.by(sortBy)
+                 .ascending();
+
+     } else {
+
+         throw new BadRequestException(
+                 "Sort direction must be 'asc' or 'desc'");
+     }
+
+     Pageable pageable =
+             PageRequest.of(
+                     page,
+                     size,
+                     sort);
+
+     // =========================================================
+     // Validate Rent Range
+     // =========================================================
+
+     if (request.getMinRent() != null &&
+             request.getMaxRent() != null) {
+
+         if (request.getMinRent()
+                 .compareTo(
+                         request.getMaxRent()) > 0) {
+
+             throw new BadRequestException(
+                     "Minimum rent cannot be greater than maximum rent");
+         }
+     }
+
+     // =========================================================
+     // Validate Start Date Range
+     // =========================================================
+
+     if (request.getStartDateFrom() != null &&
+             request.getStartDateTo() != null) {
+
+         if (request.getStartDateFrom()
+                 .isAfter(
+                         request.getStartDateTo())) {
+
+             throw new BadRequestException(
+                     "Start date from cannot be after start date to");
+         }
+     }
+
+     // =========================================================
+     // Validate End Date Range
+     // =========================================================
+
+     if (request.getEndDateFrom() != null &&
+             request.getEndDateTo() != null) {
+
+         if (request.getEndDateFrom()
+                 .isAfter(
+                         request.getEndDateTo())) {
+
+             throw new BadRequestException(
+                     "End date from cannot be after end date to");
+         }
+     }
+
+     // =========================================================
+     // Build Specification
+     // =========================================================
+
+     Page<Lease> leasePage =
+             leaseRepository.findAll(
+                     LeaseSpecification.filterLeases(
+                             owner,
+                             request.getSearch(),
+                             request.getPropertyId(),
+                             request.getTenantId(),
+                             request.getStatus(),
+                             request.getMinRent(),
+                             request.getMaxRent(),
+                             request.getStartDateFrom(),
+                             request.getStartDateTo(),
+                             request.getEndDateFrom(),
+                             request.getEndDateTo()),
+                     pageable);
+
+     // =========================================================
+     // Convert Page
+     // =========================================================
+
+     return convertToPageResponse(
+             leasePage);
+ }
+ 
+ private void validateLeaseSortField(
+	        String sortBy) {
+
+	    if (!sortBy.equals("id")
+	            && !sortBy.equals("monthlyRent")
+	            && !sortBy.equals("securityDeposit")
+	            && !sortBy.equals("startDate")
+	            && !sortBy.equals("endDate")
+	            && !sortBy.equals("status")) {
+
+	        throw new BadRequestException(
+	                "Invalid lease sort field: " + sortBy);
+	    }
+	}
 }
 

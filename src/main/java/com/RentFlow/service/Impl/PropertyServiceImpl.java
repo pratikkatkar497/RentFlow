@@ -66,6 +66,7 @@ public class PropertyServiceImpl
     // Create Property
     // =========================================================
 
+    @Transactional
     @Override
     public PropertyResponseDTO createProperty(
             PropertyRequestDTO request) {
@@ -156,6 +157,7 @@ public class PropertyServiceImpl
     // Update Property
     // =========================================================
 
+    @Transactional
     @Override
     public PropertyResponseDTO updateProperty(
             Long id,
@@ -244,6 +246,7 @@ public class PropertyServiceImpl
     // Delete Property
     // =========================================================
 
+    @Transactional
     @Override
     public void deleteProperty(
             Long id) {

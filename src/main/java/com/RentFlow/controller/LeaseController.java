@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.RentFlow.constant.AppConstants;
 import com.RentFlow.dto.request.CreateLeaseRequestDTO;
+import com.RentFlow.dto.request.LeaseFilterRequestDTO;
 import com.RentFlow.dto.request.UpdateLeaseRequestDTO;
 import com.RentFlow.dto.response.LeaseResponseDTO;
 import com.RentFlow.dto.response.PageResponseDTO;
@@ -252,4 +254,47 @@ public class LeaseController {
                         AppConstants.SUCCESS,
                         response));
     }
+    
+ // =========================================================
+ // SEARCH + FILTER + PAGINATION + SORTING
+ // =========================================================
+
+ @GetMapping("/filter")
+ public ResponseEntity<
+         ApiResponse<PageResponseDTO<LeaseResponseDTO>>>
+         filterLeases(
+
+                 @ModelAttribute
+                 LeaseFilterRequestDTO request,
+
+                 @RequestParam(
+                         defaultValue = "0")
+                 int page,
+
+                 @RequestParam(
+                         defaultValue = "10")
+                 int size,
+
+                 @RequestParam(
+                         defaultValue = "id")
+                 String sortBy,
+
+                 @RequestParam(
+                         defaultValue = "desc")
+                 String direction) {
+
+     PageResponseDTO<LeaseResponseDTO> response =
+             leaseService.filterLeases(
+                     request,
+                     page,
+                     size,
+                     sortBy,
+                     direction);
+
+     return ResponseEntity.ok(
+             new ApiResponse<>(
+                     true,
+                     AppConstants.SUCCESS,
+                     response));
+ }
 }

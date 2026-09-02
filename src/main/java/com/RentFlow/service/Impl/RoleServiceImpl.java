@@ -14,23 +14,20 @@ import com.RentFlow.service.RoleService;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
 	@Autowired
-    private RoleRepository roleRepository;
+	private RoleRepository roleRepository;
 
-    @Override
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
-    }
+	@Override
+	public List<Role> getAllRoles() {
+		return roleRepository.findAll();
+	}
 
-    @Override
-    public Role getRoleByName(RoleType roleType) {
+	@Override
+	public Role getRoleByName(RoleType roleType) {
 
-        return roleRepository.findByName(roleType)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Role not found"));
+		return roleRepository.findByName(roleType).orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-    }
+	}
 }
