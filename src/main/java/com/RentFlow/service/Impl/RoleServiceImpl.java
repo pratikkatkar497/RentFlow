@@ -11,7 +11,6 @@ import com.RentFlow.exception.ResourceNotFoundException;
 import com.RentFlow.repository.RoleRepository;
 import com.RentFlow.service.RoleService;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class RoleServiceImpl implements RoleService {

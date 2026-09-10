@@ -9,4 +9,5 @@ public interface UserService {
 
     UserResponseDTO register(RegisterRequestDTO request);
     LoginResponseDTO login(LoginRequestDTO request);
+    
 }

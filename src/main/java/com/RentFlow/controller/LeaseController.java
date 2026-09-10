@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -196,15 +197,12 @@ public class LeaseController {
     // ACTIVATE LEASE
     // =========================================================
 
-    @PutMapping("/{leaseId}/activate")
-    public ResponseEntity<
-            ApiResponse<LeaseResponseDTO>>
-            activateLease(
-                    @PathVariable Long leaseId) {
+    @PatchMapping("/{leaseId}/activate")
+    public ResponseEntity<ApiResponse<LeaseResponseDTO>> activateLease(
+            @PathVariable Long leaseId) {
 
         LeaseResponseDTO response =
-                leaseService.activateLease(
-                        leaseId);
+                leaseService.activateLease(leaseId);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
@@ -218,15 +216,12 @@ public class LeaseController {
     // TERMINATE LEASE
     // =========================================================
 
-    @PutMapping("/{leaseId}/terminate")
-    public ResponseEntity<
-            ApiResponse<LeaseResponseDTO>>
-            terminateLease(
-                    @PathVariable Long leaseId) {
+    @PatchMapping("/{leaseId}/terminate")
+    public ResponseEntity<ApiResponse<LeaseResponseDTO>> terminateLease(
+            @PathVariable Long leaseId) {
 
         LeaseResponseDTO response =
-                leaseService.terminateLease(
-                        leaseId);
+                leaseService.terminateLease(leaseId);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(

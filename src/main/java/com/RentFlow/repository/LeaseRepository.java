@@ -1,5 +1,6 @@
 package com.RentFlow.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +19,14 @@ public interface LeaseRepository
 extends JpaRepository<Lease, Long>,
         JpaSpecificationExecutor<Lease> {
 
+	long countByStatus(LeaseStatus status);
+	
     // Find all leases for a property
     List<Lease> findByProperty(Property property);
+    
+    List<Lease> findByStatusAndEndDateBefore(
+            LeaseStatus status,
+            LocalDate date);
 
     // Find all leases for a tenant
     List<Lease> findByTenant(Tenant tenant);

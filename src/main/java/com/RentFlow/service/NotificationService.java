@@ -19,6 +19,11 @@ public interface NotificationService {
 
     void markAllAsRead();
 
+    boolean notificationExists(
+            Long userId,
+            NotificationType type,
+            String message);
+    
     void createNotification(
             Long userId,
             NotificationType type,

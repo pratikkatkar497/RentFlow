@@ -15,7 +15,11 @@ import com.RentFlow.enums.TenantStatus;
 public interface TenantRepository
 extends JpaRepository<Tenant, Long>,
         JpaSpecificationExecutor<Tenant> {
+	
+	boolean existsByProperty(Property property);
 
+	long countByPropertyOwnerOrganizationId(Long organizationId);
+	
     Optional<Tenant> findByEmail(String email);
 
     Optional<Tenant> findByPhone(String phone);

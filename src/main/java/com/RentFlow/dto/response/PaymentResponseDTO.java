@@ -2,6 +2,7 @@ package com.RentFlow.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.RentFlow.enums.PaymentMethod;
 import com.RentFlow.enums.PaymentStatus;
@@ -31,8 +32,26 @@ public class PaymentResponseDTO {
     private PaymentMethod paymentMethod;
 
     private String transactionReference;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public PaymentResponseDTO() {
+    public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public PaymentResponseDTO() {
     }
 
     public Long getId() {

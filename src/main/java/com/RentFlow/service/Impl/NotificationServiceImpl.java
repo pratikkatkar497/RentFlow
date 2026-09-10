@@ -209,31 +209,35 @@ public class NotificationServiceImpl
             String title,
             String message) {
 
-        if (userId == null) {
+    	if (userId == null) {
+    	    throw new IllegalArgumentException(
+    	            "User ID is required");
+    	}
 
-            throw new IllegalArgumentException(
-                    "User ID is required");
-        }
+    	if (type == null) {
+    	    throw new IllegalArgumentException(
+    	            "Notification type is required");
+    	}
 
-        if (type == null) {
+    	if (title == null || title.trim().isEmpty()) {
+    	    throw new IllegalArgumentException(
+    	            "Notification title is required");
+    	}
 
-            throw new IllegalArgumentException(
-                    "Notification type is required");
-        }
+    	if (title.trim().length() > 150) {
+    	    throw new IllegalArgumentException(
+    	            "Notification title must not exceed 150 characters");
+    	}
 
-        if (title == null ||
-                title.trim().isEmpty()) {
+    	if (message == null || message.trim().isEmpty()) {
+    	    throw new IllegalArgumentException(
+    	            "Notification message is required");
+    	}
 
-            throw new IllegalArgumentException(
-                    "Notification title is required");
-        }
-
-        if (message == null ||
-                message.trim().isEmpty()) {
-
-            throw new IllegalArgumentException(
-                    "Notification message is required");
-        }
+    	if (message.trim().length() > 1000) {
+    	    throw new IllegalArgumentException(
+    	            "Notification message must not exceed 1000 characters");
+    	}
 
         User user =
                 userRepository.findById(userId)
@@ -292,5 +296,36 @@ public class NotificationServiceImpl
                 notification.getCreatedAt());
 
         return response;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean notificationExists(
+            Long userId,
+            NotificationType type,
+            String message) {
+
+        if (userId == null) {
+            return false;
+        }
+
+        if (type == null) {
+            return false;
+        }
+
+        if (message == null || message.trim().isEmpty()) {
+            return false;
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found"));
+
+        return notificationRepository
+                .existsByUserAndTypeAndMessage(
+                        user,
+                        type,
+                        message);
     }
 }

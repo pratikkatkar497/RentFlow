@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.RentFlow.dto.request.ChangePasswordRequestDTO;
 import com.RentFlow.entity.User;
+import com.RentFlow.exception.BadRequestException;
 import com.RentFlow.exception.ResourceNotFoundException;
 import com.RentFlow.repository.UserRepository;
 import com.RentFlow.service.PasswordService;
@@ -47,7 +48,7 @@ public class PasswordServiceImpl implements PasswordService {
                 request.getCurrentPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "Current password is incorrect");
         }
 
@@ -55,7 +56,7 @@ public class PasswordServiceImpl implements PasswordService {
         if (!request.getNewPassword()
                 .equals(request.getConfirmPassword())) {
 
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "New password and confirm password do not match");
         }
 
@@ -64,7 +65,7 @@ public class PasswordServiceImpl implements PasswordService {
                 request.getNewPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "New password must be different from current password");
         }
 

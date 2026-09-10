@@ -15,10 +15,13 @@ import com.RentFlow.entity.Property;
 import com.RentFlow.entity.User;
 import com.RentFlow.enums.PropertyStatus;
 import com.RentFlow.exception.BadRequestException;
+import com.RentFlow.exception.DuplicateResourceException;
 import com.RentFlow.exception.ResourceNotFoundException;
 import com.RentFlow.repository.PropertyRepository;
+import com.RentFlow.repository.TenantRepository;
 import com.RentFlow.repository.UserRepository;
 import com.RentFlow.service.PropertyService;
+import com.RentFlow.service.SubscriptionLimitService;
 import com.RentFlow.specification.PropertySpecification;
 
 @Service
@@ -28,17 +31,21 @@ public class PropertyServiceImpl
     private final PropertyRepository propertyRepository;
 
     private final UserRepository userRepository;
-
+    private final SubscriptionLimitService subscriptionLimitService;
     private final ModelMapper modelMapper;
+    private final TenantRepository tenantRepository;
 
     public PropertyServiceImpl(
             PropertyRepository propertyRepository,
+            TenantRepository tenantRepository,
             UserRepository userRepository,
-            ModelMapper modelMapper) {
+            SubscriptionLimitService subscriptionLimitService, ModelMapper modelMapper) {
 
         this.propertyRepository = propertyRepository;
         this.userRepository = userRepository;
-        this.modelMapper = modelMapper;
+        this.subscriptionLimitService =subscriptionLimitService;
+		this.modelMapper = modelMapper;
+		  this.tenantRepository = tenantRepository;
     }
 
     // =========================================================
@@ -72,6 +79,14 @@ public class PropertyServiceImpl
             PropertyRequestDTO request) {
 
         User owner = getCurrentUser();
+
+        // Check whether organization's subscription is active
+        subscriptionLimitService.checkSubscriptionActive(
+                owner.getOrganization().getId());
+
+        // Check subscription property limit
+        subscriptionLimitService.checkPropertyLimit(
+                owner.getOrganization().getId());
 
         Property property =
                 modelMapper.map(
@@ -262,6 +277,11 @@ public class PropertyServiceImpl
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "Property not found"));
+        if (tenantRepository.existsByProperty(property)) {
+        	throw new DuplicateResourceException(
+        		    "Property cannot be deleted because it has an associated tenant."
+        		);
+        }
 
         propertyRepository.delete(property);
     }

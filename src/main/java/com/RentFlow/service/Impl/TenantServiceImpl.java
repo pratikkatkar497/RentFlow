@@ -35,6 +35,7 @@ import com.RentFlow.repository.PropertyRepository;
 import com.RentFlow.repository.RoleRepository;
 import com.RentFlow.repository.TenantRepository;
 import com.RentFlow.repository.UserRepository;
+import com.RentFlow.service.SubscriptionLimitService;
 import com.RentFlow.service.TenantService;
 import com.RentFlow.specification.TenantSpecification;
 
@@ -46,11 +47,13 @@ public class TenantServiceImpl implements TenantService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SubscriptionLimitService subscriptionLimitService;
     private final ModelMapper modelMapper;
 
     public TenantServiceImpl(
             TenantRepository tenantRepository,
             PropertyRepository propertyRepository,
+            SubscriptionLimitService subscriptionLimitService,
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
@@ -60,6 +63,7 @@ public class TenantServiceImpl implements TenantService {
         this.propertyRepository = propertyRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.subscriptionLimitService = subscriptionLimitService;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
     }
@@ -134,6 +138,13 @@ public class TenantServiceImpl implements TenantService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Property not found"));
+     // Check whether organization's subscription is active
+        subscriptionLimitService.checkSubscriptionActive(
+                currentUser.getOrganization().getId());
+
+        // Check tenant limit
+        subscriptionLimitService.checkTenantLimit(
+                currentUser.getOrganization().getId());
 
         // 7. Check property availability
         if (property.getStatus()
@@ -171,6 +182,9 @@ public class TenantServiceImpl implements TenantService {
                         request.getPassword()));
 
         tenantUser.setRole(tenantRole);
+
+        tenantUser.setOrganization(
+                currentUser.getOrganization());
 
         tenantUser.setEnabled(true);
 
@@ -221,15 +235,27 @@ public class TenantServiceImpl implements TenantService {
         // Link Tenant with User
         tenant.setUser(savedUser);
 
-        // 11. Save Tenant
+     // 11. Save Tenant
         Tenant savedTenant =
                 tenantRepository.save(tenant);
 
-        // 12. Create response
+        // 12. Mark property as RENTED
+        property.setStatus(
+                PropertyStatus.RENTED);
+
+        propertyRepository.save(property);
+
+        // 13. Create response
         TenantResponseDTO response =
                 modelMapper.map(
                         savedTenant,
                         TenantResponseDTO.class);
+        
+        if (tenant.getUser() != null) {
+            response.setUserId(tenant.getUser().getId());
+        }
+
+        response.setCreatedAt(tenant.getCreatedAt());
 
         response.setPropertyId(
                 property.getId());
