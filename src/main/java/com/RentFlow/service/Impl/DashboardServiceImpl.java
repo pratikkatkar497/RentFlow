@@ -1,8 +1,8 @@
 package com.RentFlow.service.Impl;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -281,38 +281,64 @@ public class DashboardServiceImpl implements DashboardService {
 
         User currentUser = getCurrentUser();
 
-        // -----------------------------------------------------
-        // Find Tenant
-        // -----------------------------------------------------
-
         Tenant tenant =
                 tenantRepository
-                        .findByEmail(
-                                currentUser.getEmail())
+                        .findByEmail(currentUser.getEmail())
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "Tenant profile not found"));
 
-        // -----------------------------------------------------
-        // Find Active Lease
-        // -----------------------------------------------------
+        TenantDashboardResponseDTO response =
+                new TenantDashboardResponseDTO();
 
-        Lease lease =
-                leaseRepository
-                        .findByTenantAndStatus(
-                                tenant,
-                                LeaseStatus.ACTIVE)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Active lease not found"));
+        // Tenant information
+        response.setTenantId(tenant.getId());
 
-        Property property =
-                lease.getProperty();
+        String firstName = tenant.getFirstName();
+        String lastName = tenant.getLastName();
 
-        // -----------------------------------------------------
-        // Find Next Payment
-        // -----------------------------------------------------
+        String tenantName =
+                ((firstName == null ? "" : firstName) + " "
+                        + (lastName == null ? "" : lastName))
+                        .trim();
 
+        response.setTenantName(
+                tenantName.isEmpty() ? "Tenant" : tenantName
+        );
+
+        /*
+         * A tenant may temporarily have no active lease.
+         * The dashboard should still load successfully.
+         */
+        Optional<Lease> activeLease =
+                leaseRepository.findByTenantAndStatus(
+                        tenant,
+                        LeaseStatus.ACTIVE
+                );
+
+        if (activeLease.isEmpty()) {
+            return response;
+        }
+
+        Lease lease = activeLease.get();
+
+        Property property = lease.getProperty();
+
+        // Property information
+        if (property != null) {
+            response.setPropertyId(property.getId());
+            response.setPropertyName(property.getPropertyName());
+        }
+
+        // Lease information
+        response.setLeaseId(lease.getId());
+        response.setLeaseStartDate(lease.getStartDate());
+        response.setLeaseEndDate(lease.getEndDate());
+        response.setMonthlyRent(lease.getMonthlyRent());
+
+        /*
+         * Find the next unpaid payment.
+         */
         List<Payment> payments =
                 paymentRepository
                         .findByLeaseOrderByDueDateAsc(lease);
@@ -333,54 +359,19 @@ public class DashboardServiceImpl implements DashboardService {
             break;
         }
 
-        // -----------------------------------------------------
-        // Build Response
-        // -----------------------------------------------------
-
-        TenantDashboardResponseDTO response =
-                new TenantDashboardResponseDTO();
-
-        response.setTenantId(
-                tenant.getId());
-
-        response.setTenantName(
-                tenant.getFirstName()
-                        + " "
-                        + tenant.getLastName());
-
-        response.setPropertyId(
-                property.getId());
-
-        response.setPropertyName(
-                property.getPropertyName());
-
-        response.setLeaseId(
-                lease.getId());
-
-        response.setLeaseStartDate(
-                lease.getStartDate());
-
-        response.setLeaseEndDate(
-                lease.getEndDate());
-
-        response.setMonthlyRent(
-                lease.getMonthlyRent());
-
-        // -----------------------------------------------------
-        // Next Payment Details
-        // -----------------------------------------------------
-
         if (nextPayment != null) {
 
             response.setNextDueDate(
-                    nextPayment.getDueDate());
+                    nextPayment.getDueDate()
+            );
 
             response.setNextPaymentAmount(
-                    nextPayment.getAmount());
+                    nextPayment.getAmount()
+            );
 
             response.setNextPaymentStatus(
-                    nextPayment.getStatus()
-                            .name());
+                    nextPayment.getStatus().name()
+            );
         }
 
         return response;

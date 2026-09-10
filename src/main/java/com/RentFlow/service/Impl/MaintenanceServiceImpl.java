@@ -318,8 +318,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public MaintenanceResponseDTO getMaintenanceById(
-            Long id) {
+    public MaintenanceResponseDTO getMaintenanceById(Long id) {
 
         User currentUser = getCurrentUser();
 
@@ -328,24 +327,65 @@ public class MaintenanceServiceImpl implements MaintenanceService {
                         .findById(id)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Maintenance request not found."));
+                                        "Maintenance request not found."
+                                ));
 
-        boolean isOwner =
-                maintenance.getProperty()
-                        .getOwner()
-                        .getId()
-                        .equals(currentUser.getId());
+        // =====================================================
+        // Validate related entities
+        // =====================================================
+
+        if (maintenance.getProperty() == null) {
+            throw new ResourceNotFoundException(
+                    "Property associated with maintenance request not found."
+            );
+        }
+
+        if (maintenance.getTenant() == null) {
+            throw new ResourceNotFoundException(
+                    "Tenant associated with maintenance request not found."
+            );
+        }
+
+        // =====================================================
+        // OWNER CHECK
+        // =====================================================
+
+        boolean isOwner = false;
+
+        if (maintenance.getProperty().getOwner() != null) {
+
+            isOwner =
+                    maintenance.getProperty()
+                            .getOwner()
+                            .getId()
+                            .equals(currentUser.getId());
+        }
+
+        // =====================================================
+        // TENANT CHECK
+        // =====================================================
 
         boolean isTenant =
                 maintenance.getTenant()
                         .getEmail()
-                        .equals(currentUser.getEmail());
+                        .equalsIgnoreCase(
+                                currentUser.getEmail()
+                        );
+
+        // =====================================================
+        // AUTHORIZATION
+        // =====================================================
 
         if (!isOwner && !isTenant) {
 
             throw new AccessDeniedException(
-                    "You are not authorized to access this maintenance request.");
+                    "You are not authorized to access this maintenance request."
+            );
         }
+
+        // =====================================================
+        // Convert Entity → DTO
+        // =====================================================
 
         return convertToResponse(maintenance);
     }

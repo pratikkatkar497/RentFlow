@@ -47,8 +47,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http)
             throws Exception {
 
-        http
-            .csrf().disable()
+    	http
+        .cors()
+        .and()
+        .csrf().disable()
 
             .sessionManagement()
             .sessionCreationPolicy(
@@ -70,21 +72,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             .antMatchers("/api/auth/change-password")
             .authenticated()
+            .antMatchers("/api/profile/**").authenticated()
+            
+            .antMatchers("/api/admin/**")
+            .hasRole("SUPER_ADMIN")
 
+            .antMatchers("/api/organization/users/**")
+            .hasRole("OWNER")
+            
             // ==========================================
             // OWNER / MANAGER Dashboard
             // ==========================================
 
-            .antMatchers("/api/dashboard")
+            .antMatchers("/api/dashboard/owner")
             .hasAnyRole("OWNER", "MANAGER")
 
 
+            .antMatchers("/api/maintenance/**")
+            .hasAnyRole("OWNER", "TENANT")
+            
             // ==========================================
             // TENANT Dashboard
             // ==========================================
 
             .antMatchers("/api/dashboard/tenant")
             .hasRole("TENANT")
+            
+           
 
 
             // ==========================================
@@ -146,6 +160,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/payments/**")
             .hasAnyRole("OWNER", "MANAGER")
 
+            .antMatchers("/api/notifications/**")
+            .hasAnyRole("OWNER", "MANAGER", "TENANT")
 
             // ==========================================
             // Everything else

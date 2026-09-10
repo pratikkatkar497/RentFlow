@@ -1,6 +1,9 @@
 
 package com.RentFlow.service.Impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -23,6 +26,7 @@ import com.RentFlow.entity.Property;
 import com.RentFlow.entity.Tenant;
 import com.RentFlow.entity.User;
 import com.RentFlow.enums.LeaseStatus;
+import com.RentFlow.enums.NotificationType;
 import com.RentFlow.enums.PropertyStatus;
 import com.RentFlow.enums.TenantStatus;
 import com.RentFlow.exception.AccessDeniedException;
@@ -33,6 +37,7 @@ import com.RentFlow.repository.PropertyRepository;
 import com.RentFlow.repository.TenantRepository;
 import com.RentFlow.repository.UserRepository;
 import com.RentFlow.service.LeaseService;
+import com.RentFlow.service.NotificationService;
 import com.RentFlow.specification.LeaseSpecification;
 
 @Service
@@ -43,19 +48,22 @@ public class LeaseServiceImpl implements LeaseService {
     private final TenantRepository tenantRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final NotificationService notificationService;
 
     public LeaseServiceImpl(
             LeaseRepository leaseRepository,
             TenantRepository tenantRepository,
             UserRepository userRepository,
             ModelMapper modelMapper,
-            PropertyRepository propertyRepository) {
+            PropertyRepository propertyRepository,
+            NotificationService notificationService) {
 
         this.leaseRepository = leaseRepository;
         this.propertyRepository = propertyRepository;
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
+        this.notificationService = notificationService;
     }
 
     // =========================================================
@@ -216,6 +224,19 @@ public class LeaseServiceImpl implements LeaseService {
                 PropertyStatus.RENTED);
 
         propertyRepository.save(property);
+
+        // Notify tenant
+        if (tenant.getUser() != null) {
+
+            notificationService.createNotification(
+                    tenant.getUser().getId(),
+                    NotificationType.LEASE_CREATED,
+                    "Lease Created",
+                    "A new lease has been created for property "
+                            + property.getPropertyName()
+                            + "."
+            );
+        }
 
         return convertToResponse(savedLease);
     }
@@ -427,6 +448,20 @@ public class LeaseServiceImpl implements LeaseService {
             throw new BadRequestException(
                     "End date must be after start date");
         }
+        
+        if (request.getMonthlyRent() == null ||
+                request.getMonthlyRent().compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new BadRequestException(
+                    "Monthly rent must be greater than zero.");
+        }
+
+        if (request.getSecurityDeposit() == null ||
+                request.getSecurityDeposit().compareTo(BigDecimal.ZERO) < 0) {
+
+            throw new BadRequestException(
+                    "Security deposit cannot be negative.");
+        }
 
         // Update Fields
         lease.setMonthlyRent(
@@ -511,7 +546,22 @@ public class LeaseServiceImpl implements LeaseService {
 
         propertyRepository.save(property);
 
-        return convertToResponse(updatedLease);
+     // Notify tenant
+     Tenant tenant = lease.getTenant();
+
+     if (tenant.getUser() != null) {
+
+         notificationService.createNotification(
+                 tenant.getUser().getId(),
+                 NotificationType.LEASE_ACTIVATED,
+                 "Lease Activated",
+                 "Your lease for property "
+                         + property.getPropertyName()
+                         + " has been activated."
+         );
+     }
+
+     return convertToResponse(updatedLease);
     }
 
     // =========================================================
@@ -565,8 +615,23 @@ public class LeaseServiceImpl implements LeaseService {
 
         propertyRepository.save(property);
 
-        return convertToResponse(
-                terminatedLease);
+     // Notify tenant
+     Tenant tenant = lease.getTenant();
+
+     if (tenant.getUser() != null) {
+
+         notificationService.createNotification(
+                 tenant.getUser().getId(),
+                 NotificationType.LEASE_TERMINATED,
+                 "Lease Terminated",
+                 "Your lease for property "
+                         + property.getPropertyName()
+                         + " has been terminated."
+         );
+     }
+
+     return convertToResponse(
+             terminatedLease);
     }
 
     // =========================================================
@@ -771,6 +836,7 @@ public class LeaseServiceImpl implements LeaseService {
          }
      }
 
+     
      // =========================================================
      // Build Specification
      // =========================================================
@@ -813,5 +879,124 @@ public class LeaseServiceImpl implements LeaseService {
 	                "Invalid lease sort field: " + sortBy);
 	    }
 	}
+
+//=========================================================
+//AUTOMATIC LEASE EXPIRY
+//=========================================================
+
+@Override
+@Transactional
+public void updateExpiredLeases() {
+
+  LocalDate today = LocalDate.now();
+
+  // Find all ACTIVE leases whose end date has passed
+  List<Lease> expiredLeases =
+          leaseRepository.findByStatusAndEndDateBefore(
+                  LeaseStatus.ACTIVE,
+                  today);
+
+  for (Lease lease : expiredLeases) {
+
+      // Change lease status to EXPIRED
+      lease.setStatus(LeaseStatus.EXPIRED);
+
+      // Make the property available again
+      Property property = lease.getProperty();
+
+      if (property != null
+              && property.getStatus() == PropertyStatus.RENTED) {
+
+          property.setStatus(PropertyStatus.AVAILABLE);
+
+          propertyRepository.save(property);
+      }
+
+      leaseRepository.save(lease);
+  }
+}
+
+//=========================================================
+//LEASE EXPIRY NOTIFICATIONS
+//=========================================================
+
+@Override
+@Transactional
+public void sendLeaseExpiryNotifications() {
+
+ LocalDate today = LocalDate.now();
+
+ List<Lease> activeLeases =
+         leaseRepository.findByStatus(
+                 LeaseStatus.ACTIVE);
+
+ for (Lease lease : activeLeases) {
+
+     if (lease.getEndDate() == null) {
+         continue;
+     }
+
+     long daysRemaining =
+             java.time.temporal.ChronoUnit.DAYS.between(
+                     today,
+                     lease.getEndDate());
+
+     // Send notification only at 30, 7 and 1 day before expiry
+     if (daysRemaining != 30
+             && daysRemaining != 7
+             && daysRemaining != 1) {
+         continue;
+     }
+
+     Tenant tenant = lease.getTenant();
+
+     if (tenant == null || tenant.getUser() == null) {
+         continue;
+     }
+
+     Long userId = tenant.getUser().getId();
+
+     String propertyName =
+             lease.getProperty().getPropertyName();
+
+     String message;
+
+     if (daysRemaining == 1) {
+
+         message = "Your lease for property "
+                 + propertyName
+                 + " expires tomorrow on "
+                 + lease.getEndDate()
+                 + ".";
+
+     } else {
+
+         message = "Your lease for property "
+                 + propertyName
+                 + " expires in "
+                 + daysRemaining
+                 + " days on "
+                 + lease.getEndDate()
+                 + ".";
+     }
+
+     // Prevent duplicate notifications
+     boolean alreadySent =
+             notificationService.notificationExists(
+                     userId,
+                     NotificationType.LEASE_EXPIRING,
+                     message);
+
+     if (alreadySent) {
+         continue;
+     }
+
+     notificationService.createNotification(
+             userId,
+             NotificationType.LEASE_EXPIRING,
+             "Lease Expiring",
+             message);
+ }
+}
 }
 

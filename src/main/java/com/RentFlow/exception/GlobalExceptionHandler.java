@@ -75,12 +75,21 @@ public class GlobalExceptionHandler {
     // =========================================================
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(
+    public ResponseEntity<ErrorResponse> handleBadRequestException(
             BadRequestException ex) {
 
-        return buildErrorResponse(
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST);
+        ErrorResponse response =
+                new ErrorResponse(
+                        false,
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        LocalDateTime.now(),
+                        null
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     // =========================================================
@@ -164,5 +173,42 @@ public class GlobalExceptionHandler {
                 .status(status)
                 .body(error);
     }
+    
+    @ExceptionHandler(SubscriptionLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleSubscriptionLimitExceeded(
+            SubscriptionLimitExceededException ex) {
+
+        ErrorResponse response =
+                new ErrorResponse(
+                        false,
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        LocalDateTime.now(),
+                        null
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+    
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(
+            DuplicateResourceException ex) {
+
+        ErrorResponse response =
+                new ErrorResponse(
+                        false,
+                        ex.getMessage(),
+                        HttpStatus.CONFLICT.value(),
+                        LocalDateTime.now(),
+                        null
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+   
 }
 

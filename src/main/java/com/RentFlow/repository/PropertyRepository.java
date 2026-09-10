@@ -1,6 +1,7 @@
 package com.RentFlow.repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -16,7 +17,10 @@ import com.RentFlow.enums.PropertyType;
 public interface PropertyRepository
         extends JpaRepository<Property, Long>,
                 JpaSpecificationExecutor<Property> {
-
+	long countByOwnerOrganizationId(Long organizationId);
+	
+	List<Property> findByOwner(User owner);
+	
     Page<Property> findByOwner(
             User owner,
             Pageable pageable);

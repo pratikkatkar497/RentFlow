@@ -11,6 +11,9 @@ public interface LeaseService {
 
     // Create a new lease
     LeaseResponseDTO createLease(CreateLeaseRequestDTO request);
+    
+ // Automatically expire active leases whose end date has passed
+    void updateExpiredLeases();
 
     // Get all leases belonging to logged-in owner
     PageResponseDTO<LeaseResponseDTO> getAllLeases(
@@ -41,6 +44,8 @@ public interface LeaseService {
     LeaseResponseDTO updateLease(
             Long leaseId,
             UpdateLeaseRequestDTO request);
+    
+    void sendLeaseExpiryNotifications();
 
     // Activate lease
     LeaseResponseDTO activateLease(Long leaseId);

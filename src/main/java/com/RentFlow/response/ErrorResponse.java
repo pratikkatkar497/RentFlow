@@ -10,10 +10,26 @@ public class ErrorResponse {
     private int status;
     private LocalDateTime timestamp;
     private Map<String, String> errors;
-    public ErrorResponse(boolean b, String string, int i, LocalDateTime localDateTime, Map<String, String> errors2) {
+    public ErrorResponse(
+            boolean success,
+            String message,
+            int status,
+            LocalDateTime timestamp,
+            Map<String, String> errors) {
+
+        this.success = success;
+        this.message = message;
+        this.status = status;
+        this.timestamp = timestamp;
+        this.errors = errors;
     }
 
-    public ErrorResponse(boolean success, String message, int status, LocalDateTime timestamp) {
+    public ErrorResponse(
+            boolean success,
+            String message,
+            int status,
+            LocalDateTime timestamp) {
+
         this.success = success;
         this.message = message;
         this.status = status;

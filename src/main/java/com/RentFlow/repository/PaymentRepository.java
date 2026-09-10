@@ -18,10 +18,14 @@ public interface PaymentRepository
         extends JpaRepository<Payment, Long> {
 
     List<Payment> findByLease(Lease lease);
+    
+    long countByStatus(PaymentStatus status);
 
     List<Payment> findByLeaseAndStatus(
             Lease lease,
             PaymentStatus status);
+    
+    
 
     Optional<Payment> findByIdAndLease(
             Long id,
